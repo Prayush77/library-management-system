@@ -77,19 +77,9 @@ class GiveBook(Toplevel):
                 cur.execute("UPDATE books SET book_status=1 WHERE book_id=?", (book_id,))
                 con.commit()
                 messagebox.showinfo("Success", "Book has been lent successfully!", icon='info')
+                self.destroy()
             except Exception as e:
                 messagebox.showerror("Error", str(e), icon='warning')
         else:
             messagebox.showerror("Error", "Fields can't be empty", icon='warning')
 
-# def main():
-#     root = Tk()
-#     app = Main(root)
-#     root.title("Library Management System...")
-#     root.geometry("1000x650+350+200")
-#     root.iconbitmap('icons/library.ico')
-#     root.resizable(False, False)
-#     root.mainloop()
-
-# if __name__ == '__main__':
-#     main()

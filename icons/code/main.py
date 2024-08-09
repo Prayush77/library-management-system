@@ -34,26 +34,30 @@ class Main:
                 self.list_books.insert(count,str(book[0])+ "-" +book[1])
                 count+=1
             def bookInfo(event):
-                value = str(self.list_books.get(self.list_books.curselection()))
-                id=value.split("-")[0]
-                book = cur.execute("SELECT * FROM books WHERE book_id=?",(id,))
-                book_info=book.fetchall()
-                print(book_info)
-                self.list_details.delete(0,END)
-                self.list_details.insert(0,"Book Name :"+book_info[0][1])
-                self.list_details.insert(1,"Author :"+book_info[0][2])
-                self.list_details.insert(2,"Page :"+book_info[0][3])
-                self.list_details.insert(3,"Language :"+book_info[0][4])
-                if book_info[0][5] == 0:
-                    self.list_details.insert(4,"Status : Available")
-                else:
-                    self.list_details.insert(4,"Status : Not Available!")
+                try:
+                    value = str(self.list_books.get(self.list_books.curselection()))
+                    id=value.split("-")[0]
+                    book = cur.execute("SELECT * FROM books WHERE book_id=?",(id,))
+                    book_info=book.fetchall()
+                    print(book_info)
+                    self.list_details.delete(0,END)
+                    self.list_details.insert(0,"Book Name :"+book_info[0][1])
+                    self.list_details.insert(1,"Author :"+book_info[0][2])
+                    self.list_details.insert(2,"Page :"+book_info[0][3])
+                    self.list_details.insert(3,"Language :"+book_info[0][4])
+                    if book_info[0][5] == 0:
+                        self.list_details.insert(4,"Status : Available")
+                    else:
+                        self.list_details.insert(4,"Status : Not Available!")
+                except TclError:
+                    pass
+            
                     
             def doubleClick(event):
                 global given_id 
                 value=str(self.list_books.get(self.list_books.curselection()))
                 given_id=value.split("-")[0]
-                give_book=GiveBook()   
+                give_book=EditBook(self)   
          
                 
             self.list_books.bind('<<ListboxSelect>>',bookInfo)
@@ -220,12 +224,51 @@ class Main:
                self.list_books.insert(count,str(book[0])+"-"+book[1]) 
                count +=1
             
-
+    def refresh(self):
+        books =cur.execute('select * FROM books').fetchall()
+        count = 0
+        self.list_books.delete(0,END)
+        
+        for book in books:
+            print(book)
+            self.list_books.insert(count,str(book[0])+ "-" +book[1])
+            count+=1
+        def bookInfo(event):
+            value = str(self.list_books.get(self.list_books.curselection()))
+            id=value.split("-")[0]
+            book = cur.execute("SELECT * FROM books WHERE book_id=?",(id,))
+            book_info=book.fetchall()
+            print(book_info)
+            self.list_details.delete(0,END)
+            self.list_details.insert(0,"Book Name :"+book_info[0][1])
+            self.list_details.insert(1,"Author :"+book_info[0][2])
+            self.list_details.insert(2,"Page :"+book_info[0][3])
+            self.list_details.insert(3,"Language :"+book_info[0][4])
+            if book_info[0][5] == 0:
+                self.list_details.insert(4,"Status : Available")
+            else:
+                self.list_details.insert(4,"Status : Not Available!")
+                
+        def doubleClick(event):
+            global given_id 
+            value=str(self.list_books.get(self.list_books.curselection()))
+            given_id=value.split("-")[0]
+            give_book=EditBook(self)   
+        
+        
+            
+        self.list_books.bind('<<ListboxSelect>>',bookInfo)
+        # self.tabs.bind('<<NotebookTabChanged>>',displayStatictics)
+        self.list_books.bind('<Double-Button-1>',doubleClick)
+        
     def addBook(self):
         add = addbook.AddBook()
         
+        
+        
     def addMember(self):
         member = addmember.AddMember()
+        
         
     def searchBooks(self):
         value=self.ent_search.get()
@@ -243,9 +286,10 @@ class Main:
         give_book=givebook.GiveBook()
     
 
-class GiveBook(Toplevel):
-    def __init__(self):
-        Toplevel.__init__(self)
+class EditBook(Toplevel):
+    def __init__(self, main_instance):
+        super().__init__()
+        self.main_instance = main_instance
         self.geometry("650x650+350+100")
         self.title("Lend Book")
         self.resizable(False, False)
@@ -254,9 +298,9 @@ class GiveBook(Toplevel):
         self.book_id = int(given_id)
 
         # Querying the database for books and members
-        query = "SELECT * FROM books"
-        books = cur.execute(query).fetchall()
-        book_list = [f"{book[0]}-{book[1]}" for book in books]
+        query = "SELECT book_name, book_author FROM books where book_id = ?"
+        books = cur.execute(query,(self.book_id,)).fetchall()
+        # book_list = [f"{book[0]}-{book[1]}" for book in books]
 
         query2 = "SELECT * FROM members"
         members = cur.execute(query2).fetchall()
@@ -282,34 +326,58 @@ class GiveBook(Toplevel):
         self.book_name = StringVar()
         self.lbl_name = Label(self.bottomFrame, text="Book:", font='arial 15 bold', fg='white', bg='#fcc324')
         self.lbl_name.place(x=40, y=40)
+        
+        self.lbl_Bookname=Label(self.bottomFrame,text="Book :",font='arial 15 bold',fg='white',bg='#fcc324')
+        self.lbl_Bookname.place(x=40,y=40)
+        self.ent_Bookname=Entry(self.bottomFrame,width=30,bd=4)
+        self.ent_Bookname.delete(0,END)
+        self.ent_Bookname.insert(0,str(books[0][0]))
+        self.ent_Bookname.place(x=150,y=45)
+    
+        self.lbl_BookAuthor=Label(self.bottomFrame,text="Author:",font='arial 15 bold',fg='white',bg='#fcc324')
+        self.lbl_BookAuthor.place(x=40,y=80)
+        self.ent_BookAuthor=Entry(self.bottomFrame,width=30,bd=4)
+        self.ent_BookAuthor.delete(0,END)
+        self.ent_BookAuthor.insert(0,str(books[0][1]))
+        self.ent_BookAuthor.place(x=150,y=85)
+    
+    
 
-        self.combo_name = ttk.Combobox(self.bottomFrame, textvariable=self.book_name)
-        self.combo_name['values'] = book_list
-        self.combo_name.current(self.book_id - 1)
-        self.combo_name.place(x=150, y=45)
-
-        # Member dropdown
-        self.member_name = StringVar()
-        self.lbl_member = Label(self.bottomFrame, text="Member:", font='arial 15 bold', fg='white', bg='#fcc324')
-        self.lbl_member.place(x=40, y=80)
-
-        self.combo_member = ttk.Combobox(self.bottomFrame, textvariable=self.member_name)
-        self.combo_member['values'] = member_list
-        self.combo_member.place(x=150, y=85)
 
         # Lend Book button
-        btn = Button(self.bottomFrame, text='Lend Book', command=self.lendBook)
+        btn = Button(self.bottomFrame, text='Update', command=self.updateBook)
         btn.place(x=228, y=120)
-
-    def lendBook(self):
-        book_id = self.book_name.get().split('-')[0]
-        member_id = self.member_name.get().split('-')[0]
-
-        if book_id and member_id:
+        
+        btn = Button(self.bottomFrame, text='Delete', command=self.deleteBook)
+        btn.place(x=328, y=120)
+        
+    def deleteBook(self):
+        if given_id:
             try:
-                cur.execute("UPDATE books SET book_status=1 WHERE book_id=?", (book_id,))
+                cur.execute("DELETE FROM books WHERE book_id=?", (given_id,))
                 con.commit()
-                messagebox.showinfo("Success", "Book has been lent successfully!", icon='info')
+                messagebox.showinfo("Success", "Book has been successfully deleted!", icon='info')
+                self.main_instance.refresh()  # Refresh the book list
+                EditBook.destroy(self)
+            except Exception as e:
+                messagebox.showerror("Error", str(e), icon='warning')
+        else:
+            messagebox.showerror("Error", "Book cannot be found", icon='warning')
+    def updateBook(self):
+        # book_id = self.book_name.get().split('-')[0]
+        # member_id = self.member_name.get().split('-')[0]
+        
+        addedBookName = self.ent_Bookname.get()
+        addedBookAuthor= self.ent_BookAuthor.get()
+
+        if addedBookName and addedBookAuthor:
+            try:
+                cur.execute("UPDATE books SET book_name=?, book_author=? WHERE book_id=?", (addedBookName,addedBookAuthor,given_id,))
+                con.commit()
+                messagebox.showinfo("Success", "Book has been successfully updated!", icon='info')
+                self.main_instance.refresh()  # Refresh the book list
+                
+                EditBook.destroy(self)
             except Exception as e:
                 messagebox.showerror("Error", str(e), icon='warning')
         else:
@@ -327,3 +395,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+

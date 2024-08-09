@@ -65,6 +65,7 @@ class AddMember(Toplevel):
         cur.execute (query,(name,phone))
         con.commit()
         messagebox.showinfo("success","successfully added to data base!",icon='info')
+        self.destroy()
       
       except:
         messagebox.showerror("Error","can't add to data base",icon='warning')

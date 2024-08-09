@@ -66,20 +66,24 @@ class AddBook(Toplevel):
     btn.place(x=270,y=200)
     
   def addBook(self):
-    name=self.ent_name.get()
-    author=self.ent_author.get()
-    page=self.ent_page.get()
-    language=self.ent_language.get()
+    name=self.ent_name.get().strip()
+    author=self.ent_author.get().strip()
+    page=self.ent_page.get().strip()
+    language=self.ent_language.get().strip()
     
-    if (name and author and page and language !=""):
+    if name and author and page and language :
       try:
         query = "INSERT INTO 'books'(book_name,book_author,book_page,book_language) VALUES(?,?,?,?) "
         cur.execute (query,(name,author,page,language))
         con.commit()
         messagebox.showinfo("success","successfully added to data base!",icon='info')
+        self.refresh()  
+        self.destroy()
+        
       
-      except:
+      except sqlite3.Error as e:
         messagebox.showerror("Error","can't add to data base",icon='warning')
+
     else :
         messagebox.showerror("Error","Fields cant be empty",icon='warning')
     
