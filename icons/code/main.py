@@ -194,11 +194,21 @@ class Main:
         self.btnLendBook = Button(topFrame, text="Give Book", font='arial 12 bold', padx=10, image=self.iconLendbook, compound=LEFT,command=self.giveBook)
         self.btnLendBook.pack(side=LEFT)
         
+        self.iconLogout = Image.open('icons/code/logout.png').resize(icon_size, Image.LANCZOS)
+        self.iconLogout = ImageTk.PhotoImage(self.iconLogout)
+
+        self.btnLogout = Button(topFrame, text="Log Out", font='arial 12 bold', padx=10, image=self.iconLogout, compound=LEFT, command=self.logout)
+        self.btnLogout.pack(side=RIGHT, padx=10)
+        
         
         
         #funtion call
         displayBooks(self)
         displayStatictics(self)
+    def logout(self):
+        confirm = messagebox.askyesno("Log Out", "Are you sure you want to log out?")
+        if confirm:
+            self.master.destroy()
     
     def listBooks(self):
         value = self.listChoice.get()
